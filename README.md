@@ -1,7 +1,7 @@
 # HBMSGreenHouse
 Hollis-Brookline Middle School Greenhouse temperature/humidity monitor
 
-The HBMS greenhouse project captures temperature, humidity and other sensor data in the greenhouse in the back of HBMS.
+The HBMS greenhouse project captures temperature, humidity and other sensor data in the greenhouse behind HBMS.
 
 The 2018 goal is to capture data during the winter to determine what heating and structure components will enable the use of the greenhouse during most of the school year. It is understood that the greenhouse will probably not support a growing environment in January but if a portion of the greenhouse can remain above freezing this would allow the aquaponics to remain in place.
 
@@ -14,6 +14,8 @@ http://sites.sau41.org/hbms-health-education/home/hbms-greenhouse
     - Bluetooth is required so use at least a model 3B (3B+ has not been tried yet)
     - Model 3 also has Wifi to connect to the school Wifi
 - RPi Power Supply (5V 2.5A minimum) 
+- RPi enclosure
+- microSD card 8GB or larger
 - Texas Instruments SensorTags
     - TI SensorTags are wireless (BLE) $30 Temp/Humidity/light level sensors 
     - CR2032 batteries

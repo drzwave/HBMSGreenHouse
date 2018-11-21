@@ -24,7 +24,8 @@ The GitHub repository is located at: https://github.com/drzwave/HBMSGreenHouse
 - 110VAC power for the RPi
 
 # Setup
-- See the SETUP.TXT document in the DOC directory for details on how to setup and configure the RPi
+- See the SETUP.DOC document in the DOC directory for details on how to setup and configure the RPi
+- The RPi has libre installed so you can edit MS word documents on the RPI3
 
 # Directory Structure
 - DOC - documentation on the project

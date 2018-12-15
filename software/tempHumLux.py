@@ -32,6 +32,9 @@ class ScanDelegate(DefaultDelegate):
         elif isNewData:
             print "Received new data from {}".format(dev.addr)
 
+    def handleNotification(self,hnd,data):
+        print "scandelegate notification"
+
 class SensorBase:
     # Derived classes should set: svcUUID, ctrlUUID, dataUUID
     sensorOn  = struct.pack("B", 0x01)
@@ -79,7 +82,7 @@ class SensorTag(Peripheral):
 #        self.magnetometer   = MagnetometerSensorMPU9250(self._mpu9250)
 #        self.barometer      = BarometerSensorBMP280(self)
 #        self.gyroscope      = GyroscopeSensorMPU9250(self._mpu9250)
-#        self.keypress       = KeypressSensor(self)
+        self.keypress       = KeypressSensor(self)
         self.lightmeter     = OpticalSensorOPT3001(self)
 #        self.battery        = BatterySensor(self)
 
@@ -113,27 +116,75 @@ class OpticalSensorOPT3001(SensorBase):
         e = (raw & 0xF000) >> 12;
         return round(0.01 * (m << e),1)
 
+class KeypressSensor(SensorBase):
+    svcUUID = UUID(0xFFE0)
+    dataUUID = UUID(0xFFE1)
+    ctrlUUID = None
+    sensorOn = None
+
+    def __init__(self, periph):
+        SensorBase.__init__(self, periph)
+ 
+    def enable(self):
+        SensorBase.enable(self)
+        self.char_descr = self.service.getDescriptors(forUUID=0x2902)[0]
+        self.char_descr.write(struct.pack('<bb', 0x01, 0x00), True)
+
+    def disable(self):
+        self.char_descr.write(struct.pack('<bb', 0x00, 0x00), True)
+
+class sensorDelegate(DefaultDelegate):
+    ''' More to come'''
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+
+    def handleNotification(self, hnd, data):
+        print "Hum={}".format(tag.humidity.read())
+        print "Notification"
+        print hnd
+        print ord(data[0])
+        sys.stdout.flush()
+
+class utility():
+    def usage(self):
+        print "\nUSAGE: sudo python tempHumLux.py"
+        print "Note this program REQUIRES being run as root (IE: sudo)"
+        print "BLE devices will be scanned and SensorTags identified"
+        print "SensorTag data will then be appended to the respective .csv file\n"
+
 ''' If you are new to Python, this section of code is run when the file is executed from the commandline.'''
 if __name__ == "__main__":
     # Scan for BLE devices
     ble=Scanner().withDelegate(ScanDelegate())
-    devs=ble.scan(10)
+    try:
+        devs=ble.scan()
+    except:
+        u=utility()
+        u.usage()  # if executed without being root (sudo) this is exectued.
+        sys.exit(1)
     tags=[]
     # look thru the list for SensorTags
     for dev in devs:
         print "Device {} {} RSSI={}".format(dev.addr, dev.addrType, dev.rssi)
         for (adtype,desc,value) in dev.getScanData():
-            print " {}={}".format(desc,value)
+            #print " {}={}".format(desc,value)
             if "CC2650" in value:
                 print "found tag {}".format(dev.addr)
                 tags.append(SensorTag(dev.addr))
-    print len(tags)
+    print "Found {} SensorTags.".format(len(tags))
+
+    # for the SensorTag devices, enable the desired sensors
     for tag in tags:
         tag.humidity.enable()
         tag.lightmeter.enable()
+        tag.keypress.enable()
+        tag.withDelegate(sensorDelegate())
+
+    # for now just keep running and printing some data out... More to Come here...
     for i in range(10):
-        print "Humidity0={}".format(tags[0].humidity.read())
-        print "Humidity1={}".format(tags[1].humidity.read())
-        print "Lux0={}".format(tags[0].lightmeter.read())
-        time.sleep(1)
-        #tags[0].waitForNotifications(10)
+        for tag in tags:
+            print "Humidity={}".format(tag.humidity.read())
+            print "Lux={}".format(tag.lightmeter.read())
+            #time.sleep(1)
+            tag.waitForNotifications(100)
+

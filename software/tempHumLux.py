@@ -11,12 +11,11 @@
 
     Author: Eric Ryherd
     Date: 9 Dec 2018
-    This code is freely given to the community without copyright in an AS-IS condition.
 '''
 
 #from bluepy import btle # is pre-installed on the RPi. Bluepy handles all the bluetooth communication.
 from bluepy.btle import UUID, DefaultDelegate, Scanner, Peripheral, AssignedNumbers # Bluetooth communication handler
-import sys, struct, math, time    # system utilities
+import sys, struct, math, time, os, datetime    # system utilities
 
 def _TI_UUID(val):
     return UUID("%08X-0451-4000-b000-000000000000" % (0xF0000000+val))
@@ -84,7 +83,7 @@ class SensorTag(Peripheral):
 #        self.gyroscope      = GyroscopeSensorMPU9250(self._mpu9250)
         self.keypress       = KeypressSensor(self)
         self.lightmeter     = OpticalSensorOPT3001(self)
-#        self.battery        = BatterySensor(self)
+        self.battery        = BatterySensor(self)
 
 class HumiditySensorHDC1000(SensorBase):
     svcUUID  = _TI_UUID(0xAA20)
@@ -115,6 +114,20 @@ class OpticalSensorOPT3001(SensorBase):
         m = raw & 0xFFF;
         e = (raw & 0xF000) >> 12;
         return round(0.01 * (m << e),1)
+
+class BatterySensor(SensorBase):
+    svcUUID  = UUID("0000180f-0000-1000-8000-00805f9b34fb")
+    dataUUID = UUID("00002a19-0000-1000-8000-00805f9b34fb")
+    ctrlUUID = None
+    sensorOn = None
+
+    def __init__(self, periph):
+       SensorBase.__init__(self, periph)
+
+    def read(self):
+        '''Returns the battery level in percent'''
+        val = ord(self.data.read())
+        return val
 
 class KeypressSensor(SensorBase):
     svcUUID = UUID(0xFFE0)
@@ -172,19 +185,40 @@ if __name__ == "__main__":
                 print "found tag {}".format(dev.addr)
                 tags.append(SensorTag(dev.addr))
     print "Found {} SensorTags.".format(len(tags))
+    if len(tags)<1:
+        print "No SensorTags found. Exiting"
+        sys.exit(3)
 
     # for the SensorTag devices, enable the desired sensors
     for tag in tags:
         tag.humidity.enable()
         tag.lightmeter.enable()
-        tag.keypress.enable()
+        #tag.keypress.enable()
+        tag.battery.enable()
         tag.withDelegate(sensorDelegate())
+        tag.filename="ST"
+        tag.filename +=tag.addr
+        tag.filename=tag.filename.replace(":","_")
+        tag.filename+=".csv"
+        print "filename={}".format(tag.filename)
+        if not os.path.isfile(tag.filename):
+            tag.csvfile=open(tag.filename, 'w+',1) 
+            tag.csvfile.write("Date Time,Temperature C, Humidity, Lux, Battery, Comment\n")
+        else:
+            tag.csvfile=open(tag.filename, 'a+',1) 
 
-    # for now just keep running and printing some data out... More to Come here...
-    for i in range(10):
+    # capture the data from the sensors forever
+    for i in range(1000):
+        time.sleep(60*5)      # wait until the next reading (TODO could compute the time to the next fractional hour boundary to always be say 1/4 past the hour)
         for tag in tags:
-            print "Humidity={}".format(tag.humidity.read())
-            print "Lux={}".format(tag.lightmeter.read())
-            #time.sleep(1)
-            tag.waitForNotifications(100)
+            temphum=tag.humidity.read()
+            temp=temphum[0]
+            hum=temphum[1]
+            lux=tag.lightmeter.read()
+            bat=tag.battery.read()
+            print "Temp={}, Hum={}, Lux={}".format(temp,hum,lux)
+            tag.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp,hum,lux,bat))
 
+    for tag in tags:
+        tag.csvfile.close()
+    print "Exit"

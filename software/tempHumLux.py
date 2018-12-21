@@ -211,13 +211,17 @@ if __name__ == "__main__":
     for i in range(1000):
         time.sleep(60*5)      # wait until the next reading (TODO could compute the time to the next fractional hour boundary to always be say 1/4 past the hour)
         for tag in tags:
-            temphum=tag.humidity.read()
-            temp=temphum[0]
-            hum=temphum[1]
-            lux=tag.lightmeter.read()
-            bat=tag.battery.read()
-            print "Temp={}, Hum={}, Lux={}".format(temp,hum,lux)
-            tag.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp,hum,lux,bat))
+            try:
+                temphum=tag.humidity.read()
+                temp=temphum[0]
+                hum=temphum[1]
+                lux=tag.lightmeter.read()
+                bat=tag.battery.read()
+                print "Temp={}, Hum={}, Lux={}".format(temp,hum,lux)
+                tag.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp,hum,lux,bat))
+            except: # if the device disconnects, close the file.
+                tag.csvfile.close()
+                tags.remove(tag)
 
     for tag in tags:
         tag.csvfile.close()

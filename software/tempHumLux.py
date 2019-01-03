@@ -207,9 +207,9 @@ if __name__ == "__main__":
         else:
             tag.csvfile=open(tag.filename, 'a+',1) 
 
-    # capture the data from the sensors forever
-    for i in range(1000):
-        time.sleep(60*5)      # wait until the next reading (TODO could compute the time to the next fractional hour boundary to always be say 1/4 past the hour)
+    # capture the data from the sensors forever or as long as they remain connected to the RPi3
+    while len(tags)>0:
+        time.sleep(60*15)      # wait until the next reading (TODO could compute the time to the next fractional hour boundary to always be say 1/4 past the hour)
         for tag in tags:
             try:
                 temphum=tag.humidity.read()
@@ -221,6 +221,7 @@ if __name__ == "__main__":
                 tag.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp,hum,lux,bat))
             except: # if the device disconnects, close the file.
                 tag.csvfile.close()
+                print "tag {} has disconnected".format(tag.addr)
                 tags.remove(tag)
 
     for tag in tags:

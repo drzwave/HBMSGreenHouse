@@ -160,7 +160,8 @@ class sensorDelegate(DefaultDelegate):
 
 class utility():
     def usage(self):
-        print "\nUSAGE: sudo python tempHumLux.py"
+        print "\ncd HBMSGreenHouse/web/data - always run the program from this directory"
+        print "USAGE: sudo python tempHumLux.py"
         print "Note this program REQUIRES being run as root (IE: sudo)"
         print "BLE devices will be scanned and SensorTags identified"
         print "SensorTag data will then be appended to the respective .csv file\n"

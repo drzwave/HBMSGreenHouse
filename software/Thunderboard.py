@@ -2,6 +2,7 @@
 '''
 from bluepy.btle import *
 import struct
+import time
 
 class Thunderboard:
     ''' Connects to a SiLabs Thunderboard and reads out all the characteristics and builds the self.sensor dictionary
@@ -27,12 +28,26 @@ class Thunderboard:
                 self.name = value
 
         print "Connect to {}".format(self.name)
-        ble_service = Peripheral()
-        ble_service.connect(dev.addr, dev.addrType)             # TODO why is this failing to connect???
-        characteristics = ble_service.getCharacteristics()
+        self.ble_service = Peripheral()
+        try:
+            self.ble_service.connect(dev.addr, dev.addrType)             # TODO why is this failing to connect??? - #1
+        except:
+            print "failed to connect - wait a sec and try again"
+            time.sleep(2)
+            try:
+                self.ble_service.connect(dev.addr, dev.addrType)             # TODO why is this failing to connect??? - #2
+                print "connected on 2nd try"
+            except:
+                print "failed to connect the 2nd time too"
+                return
+
+        try:
+            characteristics = self.ble_service.getCharacteristics()
+        except:
+            return
 
         for k in characteristics:
-            print "Chars={}".format(k)
+            #print "Chars={}".format(k)
             if k.uuid == '2a6e':
                 self.sensor['temperature'] = k
             
@@ -64,7 +79,7 @@ class Thunderboard:
     def readTemperature(self):
         value = self.sensor['temperature'].read()
         value = struct.unpack('<H', value)
-        value = value[0] / 100
+        value = value[0] / 100.0
         return value
 
     def readHumidity(self):

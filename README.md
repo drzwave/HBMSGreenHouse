@@ -18,19 +18,20 @@ The GitHub repository is located at: https://github.com/drzwave/HBMSGreenHouse
 - RPi Power Supply (5V 2.5A minimum) 
 - RPi enclosure
 - microSD card 8GB or larger
-- Texas Instruments SensorTags
-    - TI SensorTags are wireless (BLE) $30 Temp/Humidity/light level sensors 
+- Silicon Labs Thunderboard Sense 2 (TB2)
+    - TB2 are wireless (BLE) $36 Temp/Humidity/light level sensors 
     - CR2032 batteries
 - 110VAC power for the RPi
 
 # Setup
 - See the SETUP.DOC document in the DOC directory for details on how to setup and configure the RPi
 - The RPi has libre installed so you can edit MS word documents on the RPI3
+- The DevelopersNotes.doc is a diary of the developers efforts for this project
 
 # Directory Structure
 - DOC - documentation on the project
 - SOFTWARE - software for the RPi to capture the sensor data and serve a web page
-- HARDWARE - Details on the hardware, mostly on the TI SensorTags
+- HARDWARE - Details on the hardware, mostly on the sensors
 
 # Basic GIT commands
 - git clone HTTPS://github.com/drzwave/HBMSGreenHouse.git = downloads the repository to the local RPi
@@ -46,4 +47,4 @@ The GitHub repository is located at: https://github.com/drzwave/HBMSGreenHouse
 
 # Contacts
 - Eric Ryherd - Hollis Energy Committee coded the initial development of this project - e_ryherd@yahoo.com
-- Erin White - Teacher - erin.white@sau41.org
+- Erin White - HBMS Teacher - erin.white@sau41.org

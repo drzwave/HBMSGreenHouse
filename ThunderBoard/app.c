@@ -112,6 +112,8 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
     case gecko_evt_le_connection_closed_id:
       appCfgConnectionClosedEvent(evt->data.evt_le_connection_closed.connection,
                                   evt->data.evt_le_connection_closed.reason);
+      printf(" *BLE disconnect* ");
+      UTIL_shutdown(); // go into sleep mode immediately after being disconnected to other sensors can get thru
       break;
 
     /* This event is triggered after the connection has been opened */
@@ -119,6 +121,7 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
     case gecko_evt_le_connection_opened_id:
       connection = evt->data.evt_le_connection_opened.connection;
       appCfgConnectionOpenedEvent(connection, evt->data.evt_le_connection_opened.bonding);
+      printf(" BLE connect ");
       break;
 
     /* Procedure has been successfully completed or failed with error. */

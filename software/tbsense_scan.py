@@ -3,8 +3,8 @@
 '''
 from bluepy.btle import *
 import struct
-import time
-import Thunderboard
+import time, datetime
+import Thunderboard     # Silicon Labs Thunderboard sensor data routines which is in this directory. PYTHONPATH has to include this directory.
 
 def getThunderboards():
     ''' Scan for TB2 boards for a few seconds and return all that are found'''
@@ -25,7 +25,12 @@ def scanSensors(thunderboards):
 
     for devId, tb in thunderboards.items():
 
-        value = tb.sensor['power_source_type'].read()   # TODO why do we need to know this? are some sensors only enabled when powered via USB?
+        try:
+            value = tb.sensor['power_source_type'].read()   # TODO why do we need to know this? are some sensors only enabled when powered via USB?
+        except:
+            print "scanSensor disconnected"
+            return
+
         if ord(value) == 0x04:
             tb.coinCell = True
 
@@ -33,7 +38,13 @@ def scanSensors(thunderboards):
         tb.filename+=tb.dev.addr.replace(":","_")
         tb.filename+=".csv"
         print "filename={}".format(tb.filename)
+        if not os.path.isfile(tb.filename):
+            tb.csvfile=open(tb.filename, 'w+',1) 
+            tb.csvfile.write("Date Time,Temperature C, Humidity, Lux, Battery, Comment\n")
+        else:
+            tb.csvfile=open(tb.filename, 'a+',1) 
 
+     
         text = ''
         text += '\n' + tb.name + '\n'
         data = dict()                   # the sensor data is stored in this dictionary
@@ -41,7 +52,7 @@ def scanSensors(thunderboards):
         try:
 
             #for key in tb.sensor.keys():
-            for key in ('temperature','humidity','ambientLight'): # TODO change this to a list of sensors passed in from the command line
+            for key in ('temperature','humidity','ambientLight','battery'): # TODO change this to a list of sensors passed in from the command line
                 if key == 'temperature':
                         data['temperature'] = tb.readTemperature()
                         text += 'Temperature:\t{} C\n'.format(data['temperature'])
@@ -79,12 +90,17 @@ def scanSensors(thunderboards):
                     data['pressure'] = tb.readPressure()
                     text += 'Pressure:\t{}\n'.format(data['pressure'])
 
+                elif key == 'battery':
+                    data['battery'] = tb.readBattery()
+                    text += 'Battery:\t{}\n'.format(data['battery'])
+
         except:
             print "Failed to get sensor data"
             return
         
         print(text)
-        
+        tb.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data['temperature'],data['humidity'],data['ambientLight'],data['battery']))
+
         thunderboards[devId].ble_service.disconnect() # disconnect from the TB2 so it will go back to sleep and save battery power
     return
 
@@ -112,8 +128,8 @@ if __name__ == '__main__':
         if len(thunderboards) == 0:
             print ".",
         else:
-            print("{} Thunderboards found - begin scanning".format(len(thunderboards)))
+            #print("{} Thunderboards found - begin scanning".format(len(thunderboards)))
             scanSensors(thunderboards)          # scan the sensors
 
-            time.sleep(13)          # TODO - remove this once the TB2 is reprogrammed to immediately go back to sleep on a disconnect. Currently it goes back into advertising mode and we immediately read it out again
+            time.sleep(1)          # wait for this TB board to sleep before looking for the others
 

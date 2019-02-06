@@ -110,9 +110,18 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
 
     /* This event indicates that a connection was closed. */
     case gecko_evt_le_connection_closed_id:
+    	conConnectionClosed();
+    	appBleAdvStop();
+    	/* Just shut down and go to sleep on disconnect.
       appCfgConnectionClosedEvent(evt->data.evt_le_connection_closed.connection,
                                   evt->data.evt_le_connection_closed.reason);
+                                  */
       printf(" *BLE disconnect* ");
+      MAIN_deInitSensors();
+      BOARD_imuClearIRQ();
+      BOARD_gasSensorClearIRQ();
+      BOARD_alsClearIRQ();
+      BOARD_ledSet(0x00);
       UTIL_shutdown(); // go into sleep mode immediately after being disconnected to other sensors can get thru
       break;
 

@@ -244,6 +244,7 @@ void connectionActiveIteration(uint32_t loopCount)
   uint8_t irqStatus = 0;
   uint8_t state;
   uint8_t hallState;
+  int i;
   bool    hallStateChanged;
   float   lux = 0;
   float   uv = 0;
@@ -261,10 +262,11 @@ void connectionActiveIteration(uint32_t loopCount)
   /* RH / T sensor read */
   if ( (loopCount % 30) == 0 ) {
     /* Measure the environmental temp and RH */
-    /* If there is an error during the measurement use 25C and 50% RH */
-    if ( SI7021_measure(&RADIO_rhData, &RADIO_tempData) != SI7021_OK ) {
-      RADIO_tempData = 25000;
-      RADIO_rhData = 50000;
+    /* If there is an error during the measurement use 25C and 50% RH - THAT's A STUPID VALUE!!! Use the negative of the error code and a RH of 1 which never happens in th ereal world. */
+    i=SI7021_measure(&RADIO_rhData, &RADIO_tempData);
+	  if ( i != SI7021_OK ) {
+      RADIO_tempData = -(i*1000); // negative the error code in whole C which makes is real obvious this is an error.
+      RADIO_rhData = 1000; // 1% which never happens in the real world.
     }
 
     if ( BAP_getPressure(&RADIO_pressure) != BAP_OK) {

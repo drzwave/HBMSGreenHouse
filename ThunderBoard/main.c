@@ -56,6 +56,7 @@
 #define MIC_SAMPLE_BUFFER_SIZE     2048
 
 static uint16_t micSampleBuffer[MIC_SAMPLE_BUFFER_SIZE];
+void initCryotimer(void);
 
 static void     init                (bool radio);
 static void     readTokens          (void);
@@ -67,15 +68,19 @@ int main(void)
 	int i;
 	uint32_t resetReason;
 
- printf("Begin Init wakeup=%02X\r\n",resetReason);
 
   /**************************************************************************/
   /* Device errata init                                                     */
   /**************************************************************************/
   CHIP_Init();
 
+  /* If first word of user data page is non-zero, enable eA Profiler trace */
+  BSP_TraceProfilerSetup();
+
+
   resetReason=RMU_ResetCauseGet();
   RMU_ResetCauseClear();
+  printf("Begin Init wakeup=%02X\r\n",resetReason);
 
   /**************************************************************************/
   /* Read tokens and store settings                                         */
@@ -196,9 +201,9 @@ void CRYOTIMER_IRQHandler(void)
   __DSB();
 }
 
-// for now set the cyrotimer to be pretty fast for debug - will change to something longer later - prescale=64 and Period=4k should be ~5min
+// for now set the cryotimer to be pretty fast for debug - will change to something longer later - prescale=64 and Period=4k should be ~5min, 1k ~1min. Has to be a power of 2
 #define CRYOTIMER_PRESCALE cryotimerPresc_64
-#define CRYOTIMER_PERIOD cryotimerPeriod_1k
+#define CRYOTIMER_PERIOD cryotimerPeriod_4k
 
 /**************************************************************************//**
  * @brief

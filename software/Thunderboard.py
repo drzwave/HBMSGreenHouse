@@ -47,7 +47,7 @@ class Thunderboard:
             return
 
         for k in characteristics:
-            #print "Chars={}".format(k)
+            #print "Chars={} UUID={}".format(k,k.uuid)
             if k.uuid == '2a6e':
                 self.sensor['temperature'] = k
             
@@ -59,6 +59,9 @@ class Thunderboard:
             
             elif k.uuid == '2a6d':
                 self.sensor['pressure'] = k
+            
+            elif k.uuid == '2a19':
+                self.sensor['battery'] = k
             
             elif k.uuid == 'c8546913-bfd9-45eb-8dde-9f8754f4a32e':
                 self.sensor['ambientLight'] = k
@@ -121,4 +124,10 @@ class Thunderboard:
         value = self.sensor['pressure'].read()
         value = struct.unpack('<L', value)
         value = value[0] / 1000
+        return value
+
+    def readBattery(self):
+        value = self.sensor['battery'].read()
+        value = struct.unpack('<B', value)
+        value = value[0]
         return value

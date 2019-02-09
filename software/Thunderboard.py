@@ -63,6 +63,9 @@ class Thunderboard:
             elif k.uuid == '2a19':
                 self.sensor['battery'] = k
             
+            elif k.uuid == '2a26':
+                self.sensor['firmware'] = k
+            
             elif k.uuid == 'c8546913-bfd9-45eb-8dde-9f8754f4a32e':
                 self.sensor['ambientLight'] = k
 
@@ -81,20 +84,41 @@ class Thunderboard:
    
     def readTemperature(self):
         value = self.sensor['temperature'].read()
-        value = struct.unpack('<H', value)
+        value = struct.unpack('<h', value)          # signed
         value = value[0] / 100.0
+        timeout=0
+        while value<-50 and timeout<5:              # sensor not ready - try again
+            time.sleep(.3) 
+            value = self.sensor['temperature'].read()
+            value = struct.unpack('<h', value) 
+            value = value[0] / 100.0
+            timeout+=1
         return value
 
     def readHumidity(self):
         value = self.sensor['humidity'].read()
         value = struct.unpack('<H', value)
         value = value[0] / 100
+        timeout=0
+        while value>100 and timeout<5:              # sensor not ready - try again
+            value = self.sensor['humidity'].read()
+            value = struct.unpack('<H', value)
+            value = value[0] / 100
+            timeout+=1
         return value
 
     def readAmbientLight(self):
         value = self.sensor['ambientLight'].read()
         value = struct.unpack('<L', value)
         value = value[0] / 100
+        timeout=0
+        while value>100000 and timeout<5:    # then the value is invalid which means the sensor has not fully powered up
+            time.sleep(.2)  # wait a bit and try again
+            value = self.sensor['ambientLight'].read()
+            value = struct.unpack('<L', value)
+            print value
+            value = value[0] / 100
+            timeout+=1
         return value
 
     def readUvIndex(self):
@@ -130,4 +154,9 @@ class Thunderboard:
         value = self.sensor['battery'].read()
         value = struct.unpack('<B', value)
         value = value[0]
+        return value
+
+    def readFirmware(self):
+        value = self.sensor['firmware'].read()
+        print value
         return value

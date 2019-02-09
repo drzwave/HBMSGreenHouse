@@ -106,10 +106,10 @@ static gecko_configuration_t config;
 
 uint16_t RADIO_eco2 = 0;
 uint16_t RADIO_tvoc = 0;
-uint32_t RADIO_rhData = 50000;
-int32_t  RADIO_tempData = 25000;
+uint32_t RADIO_rhData = 101000;  // default is 101% which is invalid so the code will know to try again
+int32_t  RADIO_tempData = -99000; // default is -99C which is basically impossible
 uint8_t  RADIO_uvIndex = 0;
-uint32_t RADIO_ambLight = 0;
+uint32_t RADIO_ambLight = -1; // set the lux reading to an invalid value to indicate the reading is incomplete.
 float    RADIO_pressure = 0;
 
 float    RADIO_soundLevel            = -60;
@@ -262,11 +262,11 @@ void connectionActiveIteration(uint32_t loopCount)
   /* RH / T sensor read */
   if ( (loopCount % 30) == 0 ) {
     /* Measure the environmental temp and RH */
-    /* If there is an error during the measurement use 25C and 50% RH - THAT's A STUPID VALUE!!! Use the negative of the error code and a RH of 1 which never happens in th ereal world. */
+    /* If there is an error during the measurement use 25C and 50% RH - THAT's A STUPID VALUE!!! Use the negative of the error code and a RH of 101% which never happens in th ereal world. */
     i=SI7021_measure(&RADIO_rhData, &RADIO_tempData);
 	  if ( i != SI7021_OK ) {
-      RADIO_tempData = -(i*1000); // negative the error code in whole C which makes is real obvious this is an error.
-      RADIO_rhData = 1000; // 1% which never happens in the real world.
+      RADIO_tempData = -(i*1000)-100000; // negative the error code from -100C which makes is real obvious this is an error.
+      RADIO_rhData = 102000; // 102% which never happens in the real world.
     }
 
     if ( BAP_getPressure(&RADIO_pressure) != BAP_OK) {

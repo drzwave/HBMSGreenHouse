@@ -18,9 +18,10 @@
 #ifndef __APP_VER_H_
 #define __APP_VER_H_
 
+// can the version numbers be dates? Nope - just get 0.1.0 if there are more than 1 digit each.
 #define APP_VERSION_MAJOR 1
 #define APP_VERSION_MINOR 2
-#define APP_VERSION_PATCH 3
+#define APP_VERSION_PATCH 9
 #define APP_VERSION_BUILD 4
 
 #endif

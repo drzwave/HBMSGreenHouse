@@ -52,7 +52,7 @@ def scanSensors(thunderboards):
         try:
 
             #for key in tb.sensor.keys():
-            for key in ('temperature','humidity','ambientLight','battery'): # TODO change this to a list of sensors passed in from the command line
+            for key in ('firmware', 'temperature','humidity','ambientLight','battery'): # TODO change this to a list of sensors passed in from the command line
                 if key == 'temperature':
                         data['temperature'] = tb.readTemperature()
                         text += 'Temperature:\t{} C\n'.format(data['temperature'])
@@ -93,6 +93,10 @@ def scanSensors(thunderboards):
                 elif key == 'battery':
                     data['battery'] = tb.readBattery()
                     text += 'Battery:\t{}\n'.format(data['battery'])
+
+                elif key == 'firmware':
+                    data['firmware'] = tb.readFirmware()
+                    text += 'Firmware:\t{}\n'.format(data['firmware'])
 
         except:
             print "Failed to get sensor data"

@@ -130,7 +130,7 @@ if __name__ == '__main__':
     while True:                                 # this program runs forever (hopefully)
         thunderboards = getThunderboards()      # scan BLE looking for a TB2 
         if len(thunderboards) == 0:
-            print ".",
+            print "\b.",
         else:
             #print("{} Thunderboards found - begin scanning".format(len(thunderboards)))
             scanSensors(thunderboards)          # scan the sensors

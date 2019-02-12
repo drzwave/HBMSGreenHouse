@@ -32,7 +32,9 @@ The GitHub repository is located at: https://github.com/drzwave/HBMSGreenHouse
 - DOC - documentation on the project
 - SOFTWARE - software for the RPi to capture the sensor data and serve a web page
 - HARDWARE - Details on the hardware, mostly on the sensors
-- ThunderBoard - Contains the firmware for the Thunderboard Sense 2. This is a Simplicity Studio project.
+- ThunderBoard - Contains the firmware for the Thunderboard Sense 2. This is a Silicon Labs Simplicity Studio project.
+- 3D - 3D printer files for the TB2 enclosure
+- web - the RPi3 is setup to generate a web page of the data which is updated hourly. The data for the web page is located in this directory.
 
 # Basic GIT commands
 - git clone HTTPS://github.com/drzwave/HBMSGreenHouse.git = downloads the repository to the local RPi

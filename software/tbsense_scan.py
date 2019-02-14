@@ -5,6 +5,19 @@ from bluepy.btle import *
 import struct
 import time, datetime
 import Thunderboard     # Silicon Labs Thunderboard sensor data routines which is in this directory. PYTHONPATH has to include this directory.
+import urllib2          # Post data to ThingSpeak.com
+
+# Base URL of Thingspeak
+baseURL = 'https://api.thingspeak.com/update?api_key='
+# The PRIVATE_KEY is needed to post data to the HBMS page on Thingspeak.com
+ThingSpeakKeys = {
+        'TB90_fd_9f_7b_4d_27.csv' : 'O2RNOOMHOQAGEHP9', # Outside
+        'TB90_fd_9f_7b_81_33.csv' : 'FWFN30ITMBINUXBP', # Inside
+        'TB90_fd_9f_7b_81_7e.csv' : 'U1KZMR05RPI04Z8V'  # Ground
+        }
+
+# DEBUG=0 turns off messages, the higher the number the more messages are printed to the screen
+DEBUG = 5
 
 def getThunderboards():
     ''' Scan for TB2 boards for a few seconds and return all that are found'''
@@ -20,6 +33,10 @@ def getThunderboards():
                     tbsense[deviceId] = Thunderboard.Thunderboard(dev)
 
     return tbsense
+
+def Post2Thingspeak(key, temp, hum, lux, batt):
+    f = urllib2.urlopen(baseURL + key + "&field1={}&field2={}&field3={}&field4={}".format(temp,hum,lux,batt))
+    f.close() 
 
 def scanSensors(thunderboards):
 
@@ -106,6 +123,11 @@ def scanSensors(thunderboards):
         tb.csvfile.write("{}, {},{},{},{}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data['temperature'],data['humidity'],data['ambientLight'],data['battery']))
 
         thunderboards[devId].ble_service.disconnect() # disconnect from the TB2 so it will go back to sleep and save battery power
+        # if we have a Thingspeak channel setup, send the data to the respective channel
+        if tb.filename in ThingSpeakKeys:
+            Post2Thingspeak(ThingSpeakKeys[tb.filename], data['temperature'],data['humidity'],data['ambientLight'],data['battery'])
+        else:
+            print "failed to find Thingspeak key {}".format(tb.filename)
     return
 
 def usage():
@@ -130,7 +152,7 @@ if __name__ == '__main__':
     while True:                                 # this program runs forever (hopefully)
         thunderboards = getThunderboards()      # scan BLE looking for a TB2 
         if len(thunderboards) == 0:
-            print "\b.",
+            if DEBUG>6: print "\b.",            # print out .s which makes it easy to visialize the time between samples
         else:
             #print("{} Thunderboards found - begin scanning".format(len(thunderboards)))
             scanSensors(thunderboards)          # scan the sensors

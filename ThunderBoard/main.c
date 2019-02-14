@@ -201,9 +201,9 @@ void CRYOTIMER_IRQHandler(void)
   __DSB();
 }
 
-// for now set the cryotimer to be pretty fast for debug - will change to something longer later - prescale=64 and Period=4k should be ~5min, 1k ~1min. Has to be a power of 2
+// for now set the cryotimer to be pretty fast for debug - will change to something longer later - prescale=64 and Period=8k should be ~10min, 1k ~1min. Has to be a power of 2
 #define CRYOTIMER_PRESCALE cryotimerPresc_64
-#define CRYOTIMER_PERIOD cryotimerPeriod_4k
+#define CRYOTIMER_PERIOD cryotimerPeriod_8k
 
 /**************************************************************************//**
  * @brief
